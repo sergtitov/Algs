@@ -64,12 +64,17 @@ public class Merge {
         List<E> leftRes = sort1(source, start, mid, target);
         List<E> rightRes = sort1(source, mid, end, target);
 
+        // if results of the sort are in a different array, copy left to right (right is usually one item bigger)
         if (leftRes != rightRes) {
             for (int i = start; i < mid; i++)
                 rightRes.set(i, leftRes.get(i));
         }
 
         List<E> res = rightRes == source ? target : source;
+
+        // avoid merge if biggest left is smaller than smallest right
+        if (((Comparable<? super E>)rightRes.get(mid - 1)).compareTo(rightRes.get(mid)) <= 0)
+            return rightRes;
 
         merge(rightRes, start, mid, end, res);
 
@@ -81,8 +86,8 @@ public class Merge {
         int size = 10_000_000;
         long before1 = System.nanoTime();
         List<Integer> list = new ArrayList<>(size);
-        for (int i = size; i >= 0; i--)
-            list.add((int)(Math.random() * (double)i));
+        for (int i = 0; i < size; i++)
+            list.add((int)(Math.random() * (double)size));
         long after1 = System.nanoTime();
         List<Integer> copy = new ArrayList<>(list);
         print("Filled in " + TimeUnit.NANOSECONDS.toMillis(after1 - before1) + "ms");
@@ -101,7 +106,7 @@ public class Merge {
         //copy.sort((a, b) -> a - b);
         Collections.sort(copy);
         long afterQ = System.nanoTime();
-        print("Collections.sort(copy) in " + TimeUnit.NANOSECONDS.toMillis(afterQ - beforeQ) + "ms");
+        print("Collections.sort in " + TimeUnit.NANOSECONDS.toMillis(afterQ - beforeQ) + "ms");
         //print(copy);
 
         print(copy.equals(sorted));
