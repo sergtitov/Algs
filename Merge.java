@@ -10,16 +10,13 @@ public class Merge {
     }
 
     public static <E> void merge(List<E> source, int start, int mid, int end, List<E> target) {
-        int leftIndex = 0;
-        int rightIndex = 0;
+        int leftIndex = start;
+        int rightIndex = mid;
         int resIndex = start;
 
-        List<E> left = source.subList(start, mid);
-        List<E> right = source.subList(mid, end);
-
-        while(leftIndex < left.size() && rightIndex < right.size()) {
-            E l = left.get(leftIndex);
-            E r = right.get(rightIndex);
+        while(leftIndex < mid && rightIndex < end) {
+            E l = source.get(leftIndex);
+            E r = source.get(rightIndex);
 
             // unchecked
             if (((Comparable<? super E>)l).compareTo(r) < 0) {
@@ -32,15 +29,14 @@ public class Merge {
             }
         }
 
-        if (leftIndex == left.size()) {
-            for (E e: right.subList(rightIndex, right.size()))
-                target.set(resIndex++, e);
+        if (leftIndex == mid) {
+            for (int i = rightIndex; i < end; i++)
+                target.set(resIndex++, source.get(i));
         }
 
-        if (rightIndex == right.size()) {
-            for (E e: left.subList(leftIndex, left.size()))
-                target.set(resIndex++, e);
-
+        if (rightIndex == end) {
+            for (int i = leftIndex; i < mid; i++)
+                target.set(resIndex++, source.get(i));
         }
     }
 
@@ -50,23 +46,31 @@ public class Merge {
     }
 
     public static <E> List<E> sort1(List<E> source, int start, int end, List<E> target) {
-        List<E> list = source.subList(start, end);
-        if (list.size() == 0)
+        if (end - start <= 1) {
             return source;
+        }
 
-        if (list.size() == 1) {
-            target.set(start, list.get(0));
-            return target;
+        if (end - start == 2) {
+            E e1 = source.get(start);
+            E e2 = source.get(start + 1);
+            if (((Comparable<? super E>)e1).compareTo(e2) > 0) {
+                source.set(start, e2);
+                source.set(start + 1, e1);
+            }
+            return source;
         }
 
         int mid = (start + end) / 2;
         List<E> leftRes = sort1(source, start, mid, target);
         List<E> rightRes = sort1(source, mid, end, target);
+
         if (leftRes != rightRes) {
             for (int i = start; i < mid; i++)
                 rightRes.set(i, leftRes.get(i));
         }
+
         List<E> res = rightRes == source ? target : source;
+
         merge(rightRes, start, mid, end, res);
 
         return res;
@@ -88,7 +92,7 @@ public class Merge {
         long before = System.nanoTime();
         List<Integer> sorted = sort(list);
         long after = System.nanoTime();
-        print("Custom Merge Sort In " + TimeUnit.NANOSECONDS.toMillis(after - before) + "ms");
+        print("Custom Merge Sort in " + TimeUnit.NANOSECONDS.toMillis(after - before) + "ms");
         //print(sorted);
         //print(list);
 
@@ -97,7 +101,7 @@ public class Merge {
         //copy.sort((a, b) -> a - b);
         Collections.sort(copy);
         long afterQ = System.nanoTime();
-        print("Quicksort In " + TimeUnit.NANOSECONDS.toMillis(afterQ - beforeQ) + "ms");
+        print("Collections.sort(copy) in " + TimeUnit.NANOSECONDS.toMillis(afterQ - beforeQ) + "ms");
         //print(copy);
 
         print(copy.equals(sorted));
